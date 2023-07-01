@@ -33,7 +33,7 @@ void MyBinTree::insert(int value)
 	m_size++;
 }
 
-/* 
+/*
 	returns nullptr if value not found
 */
 MyBinTree::Node* MyBinTree::find(int value)
@@ -55,4 +55,28 @@ MyBinTree::Node* MyBinTree::find(int value)
 		}
 	}
 	return nullptr;
+}
+
+void MyBinTree::clear()
+{
+	if (m_root == nullptr)
+		return;
+	std::queue<Node*> queue;
+	queue.push(m_root);
+	Node* current = nullptr;
+	while (!queue.empty())
+	{
+		current = queue.front();
+		queue.pop();
+
+		if (current->pright != nullptr)
+			queue.push(current->pright);
+		
+		if (current->pleft != nullptr)
+			queue.push(current->pleft);
+
+		delete current;
+	}
+	m_size = 0;
+	m_root = nullptr;
 }

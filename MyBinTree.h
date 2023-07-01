@@ -1,7 +1,7 @@
 #ifndef MYBINTREE_H
 #define MYBINTREE_H
 
-
+#include <queue>
 
 class MyBinTree
 {

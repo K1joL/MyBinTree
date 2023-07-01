@@ -33,3 +33,26 @@ void MyBinTree::insert(int value)
 	m_size++;
 }
 
+/* 
+	returns nullptr if value not found
+*/
+MyBinTree::Node* MyBinTree::find(int value)
+{
+	if (m_size == 0)
+		return nullptr;
+	Node* current = m_root;
+	while (current != nullptr)
+	{
+		if (value == current->data)
+			return current;
+		if (value > current->data)
+		{
+			current = current->pright;
+		}
+		else
+		{
+			current = current->pleft;
+		}
+	}
+	return nullptr;
+}

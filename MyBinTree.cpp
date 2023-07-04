@@ -56,54 +56,86 @@ MyBinTree::Node* MyBinTree::find(int value)
 	return nullptr;
 }
 
-/* Makes the tree orderly */
-void MyBinTree::balance()
+/* 
+Makes the tree orderly
+If root = nullptr then root would be this->m_root
+*/
+void MyBinTree::balance(Node* root, std::queue<Node*>* QofNodes)
 {
+	int flag = 0;
+	if (root == nullptr)
+	{
+		root = this->m_root;
+		flag++;
+	}
 	std::vector<Node*> nodes;
-	nodes.reserve(m_size);
+	nodes.reserve(this->m_size);
 
 	std::queue<Node*> queue;
-	queue.push(m_root);
 	Node* current = nullptr;
-	while (!queue.empty())
+
+	if (QofNodes == nullptr)
 	{
-		current = queue.front();
-		nodes.push_back(queue.front());
-		queue.pop();
-
-		if (current->pright != nullptr)
-			queue.push(current->pright);
-		if (current->pleft != nullptr)
-			queue.push(current->pleft);
-
-	}
-	std::sort(nodes.begin(), nodes.end(),
-		[](const Node* x, const Node* y)
+		queue.push(root);
+		while (!queue.empty())
 		{
-			return x->data < y->data;
-		});
-	queue = createQueueOfMid(nodes.begin(), nodes.begin() + nodes.size()-1);
-	m_root = queue.front();
+			current = queue.front();
+			nodes.push_back(queue.front());
+			queue.pop();
+
+			if (current->pright != nullptr)
+				queue.push(current->pright);
+			if (current->pleft != nullptr)
+				queue.push(current->pleft);
+
+		}
+		std::sort(nodes.begin(), nodes.end(),
+			[](const Node* x, const Node* y)
+			{
+				return x->data < y->data;
+			});
+		queue = createQueueOfMid(nodes.begin(), nodes.begin() + nodes.size() - 1);
+	}
+	else
+		queue = move(*QofNodes);
+
+	if(flag)
+	{
+		m_root = queue.front();
+		root = m_root;
+		root->parent = nullptr;
+	}
+	else
+	{
+		queue.front()->parent = root;
+		if (root->pright == nullptr)
+			root->pright = queue.front();
+		else
+			root->pleft = queue.front();
+		root = queue.front();
+	}
+
 	queue.pop();
-	m_root->parent = nullptr;
-	m_root->pright = nullptr;
-	m_root->pleft = nullptr;
-	Node* prev = m_root;
+	root->pright = nullptr;
+	root->pleft = nullptr;
 	Node* currentQ = nullptr;
+	Node* prev = root;
 	while (!queue.empty())
 	{
 		currentQ = queue.front();
 		queue.pop();
-		currentQ->parent = prev;
+		if (currentQ == nullptr)
+			continue;
 		currentQ->pright = nullptr;
 		currentQ->pleft = nullptr;
-		current = m_root;
+		current = root;
 		while (true)
 			if (currentQ->data >= current->data)
 			{
 				if (current->pright == nullptr)
 				{
 					current->pright = currentQ;
+					currentQ->parent = current;
 					break;
 				}
 				current = current->pright;
@@ -113,6 +145,7 @@ void MyBinTree::balance()
 				if (current->pleft == nullptr)
 				{
 					current->pleft = currentQ;
+					currentQ->parent = current;
 					break;
 				}
 				current = current->pleft;
@@ -216,6 +249,45 @@ std::queue<MyBinTree::Node*>& createQueueOfMid(const MyBinTree::VecIt& begin, co
 		q->push(*end);
 
 	return *q;
+}
+
+void MyBinTree::erase(int value)
+{
+	Node* nodeToDelete = find(value);
+	if (nodeToDelete == nullptr)
+		return;
+	std::queue<Node*> queue;
+	std::vector<Node*> nodes;
+	queue.push(nodeToDelete);
+	Node* current = nullptr;
+	while (!queue.empty())
+	{
+		current = queue.front();
+		nodes.push_back(queue.front());
+		queue.pop();
+
+		if (current->pright != nullptr)
+			queue.push(current->pright);
+		if (current->pleft != nullptr)
+			queue.push(current->pleft);
+	}
+	nodes.erase(nodes.begin());
+	Node* parentOfDeleted = nodeToDelete->parent;
+	//deleting node
+	if(parentOfDeleted->pright == nodeToDelete)
+		parentOfDeleted->pright = nullptr;
+	else
+		parentOfDeleted->pleft = nullptr;
+	delete nodeToDelete;
+
+	std::sort(nodes.begin(), nodes.end(),
+		[](const Node* x, const Node* y)
+		{
+			return x->data < y->data;
+		});
+	queue = createQueueOfMid(nodes.begin(), nodes.begin() + nodes.size() - 1);
+	balance(parentOfDeleted, &queue);
+	--m_size;
 }
 
 void MyBinTree::clear()

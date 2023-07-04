@@ -29,7 +29,7 @@ public:
 	MyBinTree()
 	{}
 	~MyBinTree() { clear(); }
-	void balance();
+	void balance(Node* root = nullptr, std::queue<Node*>* QofNodes = nullptr);
 	void insert(int value);
 	int size() const { return m_size; }
 	void erase(int value);
